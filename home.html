@@ -1,0 +1,176 @@
+<html>
+	<head>
+		<style>
+			body {
+				margin:0;
+				}
+			a {
+				color:inherit;
+				text-decoration:underline;
+				}
+			.headBox {
+				font-family:"Optima";
+				text-align:center;
+				position:fixed;
+				top:0;
+				left:0;
+				width:100%;
+				}
+			#footer {
+				font-family:"Optima";
+				width:100%;
+				position:fixed;
+				bottom:0;
+				margin-bottom:1em;
+				text-align:center;
+				}
+			.chartRow {
+				font-family:"Futura";
+				font-style:bold;
+				color:rgba(0,0,0,0);
+				text-align:justify;
+				width:100%;
+				}
+			.sectionTitle {
+				font-family:Didot;
+				font-style:italic;
+				font-size:1.5em;
+				}
+			.sectionBox {
+				font-family:"Optima";
+				padding:1em;
+				text-align:center;
+				color:rgba(0,0,0,0);
+				}
+			nav li {
+				display:block;
+				float:left;
+				width:28%;
+				padding:1em;
+				}
+			nav {
+				width:60%;
+				margin:0 auto;
+				overflow:hidden;
+				}
+			.chartRow span {text-align:center;float:left;}
+			#r0 span {font-size:6em;width:100%}
+			#r1 span {font-size:4em;width:50%;}
+			#r2 span {font-size:3em;width:33.333%;}
+			#r3 span {font-size:2em;width:25%;}
+			#r4 span {font-size:1.5em;width:25%;}
+			#r5 span {font-size:1em;width:20%;}
+			#r6 span {font-size:0.75em;width:16.666%%;}
+			#r7 span {font-size:0.5em;width:12.5%;}
+			/*#r2,#r3,#r4 {color:lightblue}*/
+		</style>
+		<script>
+			var updateables = [];
+			
+			function register(func) {
+				updateables.push(func);
+				}
+		
+			function update() {
+				var scrollVal = window.pageYOffset;
+				var fidx = updateables.length;
+				while(fidx) {
+					fidx--;
+					updateables[fidx](scrollVal);
+					}
+				}
+		
+			function addFocusDefocus(div,focusAt,defocusAt) {
+				register(function(scrollVal){
+						 if(scrollVal<focusAt) {
+							 div.style["text-shadow"] = "0 0 20px #000";
+							 }
+						 else{if(scrollVal>defocusAt) {
+							 div.style["text-shadow"] = "0 0 20px #000";
+							 }
+						 else {
+							 if((defocusAt-scrollVal)<160) {
+								 div.style["text-shadow"] = "0 0 "+String(20-(defocusAt-scrollVal)*0.125)+"px #000";
+								 }
+							 else {if((scrollVal-focusAt)<160) {
+								 div.style["text-shadow"] = "0 0 "+String(20-(scrollVal-focusAt)*0.125)+"px #000";
+								 }
+							 else {
+								 div.style["text-shadow"] = "0 0 0px #000";
+								 }}
+							 }}
+						 });
+				}
+			
+		</script>
+	</head>
+	<body style="height:5000px" onscroll="update()">
+		<div id="head" class="headBox">
+			<nav>
+				<li onclick="window.scrollTo(0,750)">Glasses</li>
+				<li onclick="window.scrollTo(0,2250)">Contact Lenses</li>
+				<li onclick="window.scrollTo(0,3750)">Appointments</li>
+			</nav>
+		</div>
+		<div id="chart" style="position:fixed;left:50%;top:50px;margin-left:-150px;width:300px;">
+			<div id="r0" class="chartRow"><span>A</span></div>
+			<div id="r1" class="chartRow"><span>X</span><span>O</span></div>
+			<div id="r2" class="chartRow"><span>T</span><span>H</span><span>E</span></div>
+			<div id="r3" class="chartRow"><span>L</span><span>E</span><span>N</span><span>S</span></div>
+			<div id="r4" class="chartRow"><span>R</span><span>O</span><span>O</span><span>M</span></div>
+			<div id="r5" class="chartRow"><span>X</span><span>A</span><span>U</span><span>M</span><span>T</span></div>
+			<div id="r6" class="chartRow"><span>V</span><span>H</span><span>A</span><span>X</span><span>U</span><span>Y</span></div>
+			<div id="r7" class="chartRow"><span>A</span><span>U</span><span>T</span><span>H</span><span>Y</span><span>M</span><span>X</span><span>V</span></div>
+		</div>
+		<script>
+			register(function(scrollVal){
+					 var rows = document.getElementsByClassName("chartRow");
+					 var blurVal = (100 - scrollVal/50)/100;
+					 var ridx = rows.length;
+					 var div,nomBlur,sBV,rowNumber,fBV;
+					 while(ridx) {
+						 ridx--;
+						 div = rows[ridx];
+						 rowNumber = Number(div.id.replace("r",""));
+						 sBV = ((8-rowNumber)/10);
+						 nomBlur = 10*(10-rowNumber);
+						 fBV = nomBlur*(blurVal-sBV);
+						 if(fBV<0) {
+						     fBV = 0;
+							 }
+						 if(rowNumber == 2 || rowNumber == 3 || rowNumber == 4) {
+							 div.style["text-shadow"] = "0 0 "+String(fBV)+"px #add8e6";
+							 }
+						 else {
+						     div.style["text-shadow"] = "0 0 "+String(fBV)+"px #000";
+							 }
+						 }
+					 });
+		</script>
+		<div id="contacts" class="sectionBox" style="width:30%;position:fixed;left:20px;top:50%;">
+			<span class="sectionTitle">Contact Lenses</span>
+			<p>We specialise in contact lenses and can provide continuing care to ensure your eyes stay healthy.</p>
+		</div>
+		<div id="glasses" class="sectionBox" style="width:30%;position:fixed;left:20px;top:20%;">
+			<span class="sectionTitle">Glasses</span>
+			<p>As a dispensing opticians, we can help you find the perfect pair of glasses. With a range including frames
+			from: Mr Posh Italian, A Refined Swedish Bloke, People Who Make Underwear there's bound to be something that suits
+			your style.</p>
+		</div>
+		<div id="appointments" class="sectionBox" style="width:30%;position:fixed;left:20px;top:80%;">
+			<span class="sectionTitle">Appointments</span>
+			<p>To make an appointment call us on: 01923 460482 or email us at:
+			<a href="mailto:info@thelensroom.com">info@thelensroom.com</a></p>
+		</div>
+		<div id="footer">
+			 - The Lens Room -<br/>
+			 <a href="http://www.google.co.uk/maps/place/2+Woodlands,+Radlett,+Hertfordshire+WD7+7NT/@51.6889594,-0.3207641,17z">2, Woodlands, Radlett, Herts, WD7 7NT</a>
+		</div>
+		<script>
+			addFocusDefocus(document.getElementById("contacts"),1500,3000);
+			addFocusDefocus(document.getElementById("glasses"),0,1500);
+			addFocusDefocus(document.getElementById("appointments"),3000,4500);
+			update();
+		</script>
+	</body>
+</html>
