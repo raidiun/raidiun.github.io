@@ -43,6 +43,8 @@
 				color:rgba(0,0,0,0);
 				}
 			nav li {
+				font-family:Didot;
+				font-style:italic;
 				display:block;
 				float:left;
 				width:28%;
@@ -101,15 +103,48 @@
 							 }}
 						 });
 				}
-			
+		
+			function smoothScroll(upQ,distance,time,precision) {
+				precision = typeof precision !== 'undefined' ? precision : 250;
+				if(precision>1000) {
+						precision = 1000;
+						}
+				
+				time *= precision;
+				var speed = distance/time;
+				var scrollF;
+				
+				if(upQ) {
+					var scrollTarget = window.pageYOffset - distance;
+					scrollF = function() {
+						window.scrollTo(0,window.pageYOffset - speed);
+						if(window.pageYOffset<=scrollTarget) {
+							window.clearInterval(stopScroll);
+							}
+						}
+					}
+				
+				else {
+					var scrollTarget = window.pageYOffset + distance;
+					scrollF = function() {
+						window.scrollTo(0,window.pageYOffset + speed);
+						if(window.pageYOffset>=scrollTarget) {
+							window.clearInterval(stopScroll);
+							}
+						}
+					}
+				
+				var stopScroll = window.setInterval(scrollF,1000/precision);
+				}
+		
 		</script>
 	</head>
 	<body style="height:5000px" onscroll="update()">
 		<div id="head" class="headBox">
 			<nav>
-				<li onclick="window.scrollTo(0,750)">Glasses</li>
-				<li onclick="window.scrollTo(0,2250)">Contact Lenses</li>
-				<li onclick="window.scrollTo(0,3750)">Appointments</li>
+				<li onclick="window.scrollTo(0,0);smoothScroll(false,750,0.75);">Glasses</li>
+				<li onclick="window.scrollTo(0,1500);smoothScroll(false,750,0.75);">Contact Lenses</li>
+				<li onclick="window.scrollTo(0,3000);smoothScroll(false,750,0.75);">Appointments</li>
 			</nav>
 		</div>
 		<div id="chart" style="position:fixed;left:50%;top:50px;margin-left:-150px;width:300px;">
