@@ -108,13 +108,13 @@ fdk['onMouseDown'] = function(event) {
 	card.style.zIndex = 1;
 	card.setAttribute('data-offset',JSON.stringify(offset));
 	card.addEventListener('mousemove',fdk['onMouseMove']);
-	card.addEventListener('touchmove',fdk['onMouseMove']);
+	card.addEventListener('touchmove',fdk['onTouchMove']);
 	}
 
 fdk['onMouseUp'] = function(event) {
 	event.currentTarget.style.zIndex = 0;
 	event.currentTarget.removeEventListener('mousemove',fdk['onMouseMove']);
-	event.currentTarget.removeEventListener('touchmove',fdk['onMouseMove']);
+	event.currentTarget.removeEventListener('touchmove',fdk['onTouchMove']);
 	}
 
 fdk['onMouseMove'] = function(event) {
@@ -122,4 +122,11 @@ fdk['onMouseMove'] = function(event) {
 	var offset = JSON.parse(card.getAttribute('data-offset'));
 	card.style.left = event.clientX + offset.x;
 	card.style.top = event.clientY + offset.y;
+	}
+
+fdk['onTouchMove'] = function(event) {
+	var card = event.currentTarget;
+	var offset = JSON.parse(card.getAttribute('data-offset'));
+	card.style.left = event.touches[0].clientX + offset.x;
+	card.style.top = event.touches[0].clientY + offset.y;
 	}
