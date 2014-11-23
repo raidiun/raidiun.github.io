@@ -1,0 +1,43 @@
+<html>
+<head>
+	<script src="./freedeck.js"></script>
+	<style>
+		body {
+			background-color:green;
+			}
+		.cardBase {
+			fill:#fff;
+			stroke-width: 0.5px;
+			stroke:black;
+			}
+		.cardShadow {
+			fill:black;
+			opacity:0.2;
+			}
+		.redSuit {
+			fill:red;
+			}
+		.blackSuit {
+			fill:black;
+			}
+		.playingCard {
+			position:fixed;
+			top:0;
+			left:0;
+			}
+	</style>
+</head>
+<body>
+	<script>
+		var suits = ['club','diamond','heart','spade'];
+		var values = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+		for(var sidx=0;sidx<4;sidx++) {
+			for(var vidx=0;vidx<13;vidx++) {
+				var card = document.body.appendChild(fdk.assets.generator(suits[sidx],values[vidx]));
+				card.style.top = sidx*100;
+				card.style.left = vidx*40;
+				}
+			}
+	</script>
+</body>
+</html>
