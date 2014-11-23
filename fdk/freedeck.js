@@ -103,8 +103,14 @@ fdk['onMouseDown'] = function(event) {
 	var card = event.currentTarget;
 	var offset = {};
 	var bounds = card.getBoundingClientRect();
-	offset.x = bounds.left - event.clientX;
-	offset.y = bounds.top - event.clientY;
+	if(event.constructor == TouchEventConstructor) {
+		offset.x = bounds.left - event.touches[0].clientX;
+		offset.y = bounds.top - event.touches[0].clientY;
+		}
+	else {
+		offset.x = bounds.left - event.clientX;
+		offset.y = bounds.top - event.clientY;
+		}
 	card.style.zIndex = 1;
 	card.setAttribute('data-offset',JSON.stringify(offset));
 	card.addEventListener('mousemove',fdk['onMouseMove']);
