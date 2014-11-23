@@ -103,7 +103,7 @@ fdk['onMouseDown'] = function(event) {
 	var card = event.currentTarget;
 	var offset = {};
 	var bounds = card.getBoundingClientRect();
-	if(event.touches != 'undefined') {
+	if(event.type != 'mousedown') {
 		offset.x = bounds.left - event.touches[0].clientX;
 		offset.y = bounds.top - event.touches[0].clientY;
 		}
@@ -111,14 +111,13 @@ fdk['onMouseDown'] = function(event) {
 		offset.x = bounds.left - event.clientX;
 		offset.y = bounds.top - event.clientY;
 		}
-	card.style.zIndex = 1;
 	card.setAttribute('data-offset',JSON.stringify(offset));
+	fdk['indexer']['bringToTop'](card);
 	card.addEventListener('mousemove',fdk['onMouseMove']);
 	card.addEventListener('touchmove',fdk['onTouchMove']);
 	}
 
 fdk['onMouseUp'] = function(event) {
-	event.currentTarget.style.zIndex = 0;
 	event.currentTarget.removeEventListener('mousemove',fdk['onMouseMove']);
 	event.currentTarget.removeEventListener('touchmove',fdk['onTouchMove']);
 	}
@@ -135,4 +134,28 @@ fdk['onTouchMove'] = function(event) {
 	var offset = JSON.parse(card.getAttribute('data-offset'));
 	card.style.left = event.touches[0].clientX + offset.x;
 	card.style.top = event.touches[0].clientY + offset.y;
+	}
+
+fdk['indexer'] = fdk['indexer'] || {};
+
+fdk['indexer']['index'] = [];
+
+fdk['indexer']['register'] = function(element) {
+	fdk['indexer']['index'].push(element);
+	}
+
+fdk['indexer']['bringToTop'] = function(element) {
+	var index = fdk['indexer']['index'];
+	index.splice(index.indexOf(element),1);
+	index.push(element);
+	fdk['indexer']['index'] = index;
+	fdk['indexer']['updateZIndicies']();
+	}
+
+fdk['indexer']['updateZIndicies'] = function() {
+	var index = fdk['indexer']['index'];
+	var len = index.length;
+	for(var idx=0;idx<len;idx++) {
+		index[idx].style.zIndex = idx;
+		}
 	}
