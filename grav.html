@@ -33,12 +33,12 @@
 					cy = e.touches[0].clientY;
 					}
 				var x = 1500.0*(cx-canvasBCR.left)/(canvasBCR.right-canvasBCR.left);
-				var y = 1500.0*(cy-canvasBCR.top)/(canvasBCR.bottom-canvasBCR.top)
+				var y = 1500.0*(cy-canvasBCR.top)/(canvasBCR.bottom-canvasBCR.top);
 				orbs.push(new Orb(x,y, 0, 30, 100));
 				}
 		
 			 canvas.addEventListener("mousedown",omd);
-			 canvas.addEventListener("touchstart",omd);
+			 //canvas.addEventListener("touchstart",omd);
 		
 			 function Orb(x, y, dx, dy, mass) {
 			 this.x = x;
