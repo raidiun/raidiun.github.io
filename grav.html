@@ -1,0 +1,224 @@
+<html>
+	<head>
+		<style type="text/css">
+			body {
+				background-color: black;
+				margin:0;
+				width:100%;
+				height:100%;
+				}
+			#main {
+				width:100%;
+				height:100%;
+				}
+		</style>
+	</head>
+	<body>
+		<canvas id="main" width="1500" height="1500"></canvas>
+		<script type="text/javascript">
+			 var canvas = document.getElementById("main");
+			 var ctx = canvas.getContext("2d");
+			 
+			 var orbs = [];
+			 
+			 canvas.addEventListener("mousedown",function(e){
+									 canvasBCR = canvas.getBoundingClientRect();
+									 var x = 1500.0*(e.clientX-canvasBCR.left)/(canvasBCR.right-canvasBCR.left);
+									 var y = 1500.0*(e.clientY-canvasBCR.top)/(canvasBCR.bottom-canvasBCR.top)
+									 orbs.push(new Orb(x,y, 0, 30, 100));
+									 })
+			
+			 canvas.addEventListener("touchstart",function(e){
+									canvasBCR = canvas.getBoundingClientRect();
+									var x = 1500.0*(e.touches[0].clientX-canvasBCR.left)/(canvasBCR.right-canvasBCR.left);
+									var y = 1500.0*(e.touches[0].clientY-canvasBCR.top)/(canvasBCR.bottom-canvasBCR.top)
+									orbs.push(new Orb(x,y, 0, 30, 100));
+									})
+			 
+			 function Orb(x, y, dx, dy, mass) {
+			 this.x = x;
+			 this.y = y;
+			 this.dx = dx;
+			 this.dy = dy;
+			 this.mass = mass;
+			 
+			 this.path = [];
+			 
+			 this.radius = Math.sqrt(this.mass);
+			 }
+			 
+			 var orbFrameCount = 0;
+			 var fpsUpdateRate = 500; // ms
+			 var lastFpsUpdate = 0;
+			 
+			 var physicsUpdateRate = 1000/120.0;
+			 var lastPhysicsUpdate = 0;
+			 var physicsFrameCount = 0;
+			 
+			 var time = new Date().getTime();
+			 
+			 function ran(min, max) {
+			 return Math.floor(Math.random() * (max - min + 1)) + min;
+			 }
+			 
+			 var G = 0.5;
+			 
+			 var trailcount = 200;
+			 
+			 function updateOrbs(dt) {
+			 var dtsec = dt/1000.0;
+			 for(var i in orbs) {
+			 var orb1 = orbs[i];
+			 
+			 for(var j in orbs) {
+			 if(i === j) continue;
+			 
+			 var orb2 = orbs[j];
+			 
+			 var dvec = { // distance vector between orb1 and orb2
+			 x: orb2.x-orb1.x,
+			 y: orb2.y-orb1.y
+			 };
+			 
+			 // distance between orb1 and orb2 squared
+			 var r = Math.sqrt(Math.pow(dvec.x, 2) + Math.pow(dvec.y, 2));
+			 // acceleration on orb1
+			 var a = (G * orb2.mass)/(r);
+			 
+			 var ndvec = { // dvec normalised
+			 x: dvec.x/r,
+			 y: dvec.y/r
+			 };
+			 
+			 orb1.dx += ndvec.x * a;
+			 orb1.dy += ndvec.y * a;
+			 }
+			 
+			 orb1.path.push({x:orb1.x, y:orb1.y});
+			 if(orb1.path.length > trailcount) orb1.path.shift();
+			 
+			 
+			 
+			 }
+			 
+			 for(var k in orbs) {
+			 var orb = orbs[k];
+			 orb.x += orb.dx * dtsec;
+			 orb.y += orb.dy * dtsec;
+			 
+			 if(orb.x > 1500) orb.x = 0;
+			 if(orb.x < 0) orb.x = 1500;
+			 if(orb.y > 1500) orb.y = 0;
+			 if(orb.y < 0) orb.y = 1500;
+			 }
+			 
+			 physicsFrameCount++;
+			 }
+			 
+			 function renderOrbs() {
+			 clearOrbs();
+			 
+			 for(var i in orbs) {
+			 var orb = orbs[i];
+			 drawOrb(orb);
+			 }
+			 orbFrameCount++;
+			 function drawOrb(orb) {
+			 orb.lastX = orb.x;
+			 orb.lastY = orb.y;
+			 
+			 for(var i = 0; i < orb.path.length; i+=2) {
+			 var ghost = orb.path[i];
+			 var size = tailfn(orb, i);
+			 if(size > 0.4)
+			 drawCircle(ghost.x, ghost.y, size, "rgba(102, 153, 204, 1)");
+			 }
+			 
+			 drawCircle(orb.x, orb.y, orb.radius, "#FFFFFF");
+			 }
+			 }
+			 
+			 function tailfn(orb, i) {
+			 return (i/trailcount)*orb.radius;
+			 }
+			 
+			 
+			 
+			 function clearOrbs() {
+			 for(var i in orbs) {
+			 var orb = orbs[i];
+			 clearOrb(orb);
+			 }
+			 
+			 function clearOrb(orb) {
+			 var clearPadding = 2;
+			 drawCircle(orb.lastX, orb.lastY, orb.radius + 2, "#000000");
+			 
+			 var minx = 10000,
+			 maxx = 0,
+			 miny = 10000,
+			 maxy = 0;
+			 
+			 for(var i in orb.path) {
+			 var ghost = orb.path[i];
+			 var r = orb.radius;
+			 if(ghost.x-r < minx)  minx = ghost.x-r;
+			 if(ghost.x+r > maxx)  maxx = ghost.x+r;
+			 if(ghost.y-r < miny)  miny = ghost.y-r;
+			 if(ghost.y+r > maxy)  maxy = ghost.y+r;
+			 }
+			 ctx.fillStyle = "#000000";
+			 var buffer = 2;
+			 ctx.fillRect(minx - buffer, miny - buffer, maxx-minx + 2*buffer, maxy-miny + 2*buffer);
+			 }
+			 }
+			 
+			 function renderFps() {
+			 clearFps();
+			 ctx.font="20px Georgia";
+			 ctx.fillStyle = "#FFFFFF";
+			 ctx.fillText((orbFrameCount/(fpsUpdateRate/1000.0)) + " drawfps",1250,25);
+			 ctx.fillText((physicsFrameCount/(fpsUpdateRate/1000.0)) + " updatefps",1250,50);
+			 
+			 orbFrameCount = 0;
+			 physicsFrameCount = 0;
+			 function clearFps() {
+			 ctx.fillStyle = "#000000";
+			 ctx.fillRect(1250,7,140,50);
+			 }
+			 }
+			 function drawCircle(x, y, r, c) {
+			 ctx.fillStyle = c;
+			 ctx.beginPath();
+			 ctx.arc(x, y, r, 0, Math.PI*2, true);
+			 ctx.closePath();
+			 ctx.fill();
+			 }
+			 
+			 (function loop() {
+			  window.webkitRequestAnimationFrame(loop);
+			  var now = new Date().getTime();
+			  var dt = now - time;
+			  if(dt > 20) dt = 20; // update slow if running slow
+			  
+			  // updating
+			  //if((now-lastPhysicsUpdate) > physicsUpdateRate) {
+			  updateOrbs(dt);
+			  //lastPhysicsUpdate = now;
+			  //}
+			  
+			  // rendering
+			  renderOrbs();
+			  //if((now - lastFpsUpdate) > fpsUpdateRate) {
+			  //renderFps();
+			  //lastFpsUpdate = now;
+			  //}
+			  
+			  time = now;
+			  //setTimeout(loop, 0);
+			  })();
+			 
+			</script>
+	</body>
+	
+</html>
