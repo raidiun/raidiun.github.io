@@ -94,6 +94,8 @@ fdk['assets']['generator'] = function(suit,value) {
 	elem.id = String(value) + suit;
 	elem.addEventListener('mousedown',fdk['onMouseDown']);
 	elem.addEventListener('mouseup',fdk['onMouseUp']);
+	elem.addEventListener('touchstart',fdk['onMouseDown']);
+	elem.addEventListener('touchend',fdk['onMouseUp']);
 	return(elem);
 	}
 
@@ -106,11 +108,13 @@ fdk['onMouseDown'] = function(event) {
 	card.style.zIndex = 1;
 	card.setAttribute('data-offset',JSON.stringify(offset));
 	card.addEventListener('mousemove',fdk['onMouseMove']);
+	card.addEventListener('touchmove',fdk['onMouseMove']);
 	}
 
 fdk['onMouseUp'] = function(event) {
 	event.currentTarget.style.zIndex = 0;
 	event.currentTarget.removeEventListener('mousemove',fdk['onMouseMove']);
+	event.currentTarget.removeEventListener('touchmove',fdk['onMouseMove']);
 	}
 
 fdk['onMouseMove'] = function(event) {
