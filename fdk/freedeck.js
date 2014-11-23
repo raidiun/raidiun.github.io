@@ -103,7 +103,7 @@ fdk['onMouseDown'] = function(event) {
 	var card = event.currentTarget;
 	var offset = {};
 	var bounds = card.getBoundingClientRect();
-	if(event.constructor == TouchEventConstructor) {
+	if(event.constructor == 'TouchEventConstructor') {
 		offset.x = bounds.left - event.touches[0].clientX;
 		offset.y = bounds.top - event.touches[0].clientY;
 		}
