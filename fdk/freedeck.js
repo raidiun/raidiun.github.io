@@ -4,7 +4,7 @@ fdk['assets'] = fdk['assets'] || {};
 
 fdk['assets']['cardBase'] = function() {
 	var size = fdk['settings']['cardSize'];
-	var returnString = '<svg width="'+String(size)+'" height="'+String(1.5*size)+'" viewBox="0 0 100 150">\
+	var returnString = '<svg width="100%" height="100%" viewBox="0 0 100 150">\
 						<rect class="cardShadow" x="2" y="2" width="98" height="148" rx="10" ry="10"/>\
 						<rect class="cardBase" x="1" y="1" width="98" height="148" rx="10" ry="10"/>';
 	return(returnString);
@@ -90,6 +90,10 @@ fdk['assets']['generator'] = function(suit,value) {
 	returnString += fdk['assets']['valueMark'](suit,value);
 	returnString += '</svg>';
 	elem.innerHTML = returnString;
+	
+	var size = fdk['settings']['cardSize'];
+	elem.style.width= size;
+	elem.style.height = 1.5*size;
 	elem.className += ' playingCard';
 	elem.id = String(value) + suit;
 	elem.addEventListener('mousedown',fdk['onMouseDown']);
@@ -111,29 +115,34 @@ fdk['onMouseDown'] = function(event) {
 		offset.x = bounds.left - event.clientX;
 		offset.y = bounds.top - event.clientY;
 		}
-	card.setAttribute('data-offset',JSON.stringify(offset));
+	card.setAttribute('data-fdkOffset',JSON.stringify(offset));
+	fdk['physics']['makeActive'](card,bounds.left,bounds.top);
 	fdk['indexer']['bringToTop'](card);
 	card.addEventListener('mousemove',fdk['onMouseMove']);
 	card.addEventListener('touchmove',fdk['onTouchMove']);
 	}
 
 fdk['onMouseUp'] = function(event) {
+	fdk['physics']['end'](card);
+	card.removeAttribute('data-fdkPActive');
 	event.currentTarget.removeEventListener('mousemove',fdk['onMouseMove']);
 	event.currentTarget.removeEventListener('touchmove',fdk['onTouchMove']);
 	}
 
 fdk['onMouseMove'] = function(event) {
 	var card = event.currentTarget;
-	var offset = JSON.parse(card.getAttribute('data-offset'));
+	var offset = JSON.parse(card.getAttribute('data-fdkOffset'));
 	card.style.left = event.clientX + offset.x;
 	card.style.top = event.clientY + offset.y;
+	fdk['physics']['simulate'](card);
 	}
 
 fdk['onTouchMove'] = function(event) {
 	var card = event.currentTarget;
-	var offset = JSON.parse(card.getAttribute('data-offset'));
+	var offset = JSON.parse(card.getAttribute('data-fdkOffset'));
 	card.style.left = event.touches[0].clientX + offset.x;
 	card.style.top = event.touches[0].clientY + offset.y;
+	fdk['physics']['simulate'](card);
 	}
 
 fdk['indexer'] = fdk['indexer'] || {};
@@ -158,4 +167,44 @@ fdk['indexer']['updateZIndicies'] = function() {
 	for(var idx=0;idx<len;idx++) {
 		index[idx].style.zIndex = idx;
 		}
+	}
+
+fdk['physics'] = fdk['physics'] || {};
+
+fdk['physics']['makeActive'] = function(card,cx,cy) {
+	card.setAttribute('data-fdkPActive',JSON.stringify({'left':cx,'top':cy,'vx':0,'vy':0,'rotate':0,'time':(new Date()).getTime()}));
+	}
+
+fdk['physics']['simulate'] = function(card) {
+	//CoA is at left+0.5*size,top+0.75*size
+	var offset = JSON.parse(card.getAttribute('data-fdkOffset'));
+	var physData = JSON.parse(card.getAttribute('data-fdkPActive'));
+	var bounds = card.getBoundingClientRect();
+	bounds = {'top':card.offsetTop,'left':card.offsetLeft};
+	
+	var gravity = 0.05;
+	
+	var now =  (new Date()).getTime();
+	var dr = {};
+	dr.x = bounds.left - physData.left;
+	dr.y = bounds.top - physData.top;
+	
+	var dv = {};
+	dv.x = dr.x/(now-physData.time);
+	dv.y = dr.y/(now-physData.time);
+	
+	var a = {};
+	a.x = (dv.x-physData.vx)/(now-physData.time);
+	a.y = (dv.y-physData.vy)/(now-physData.time) + gravity;
+	
+	var theta = Math.atan(a.x/a.y)*180/Math.PI;
+	
+	card.firstChild.style['-webkit-transform-origin'] = String(-offset.x)+' '+String(-offset.y);
+	card.firstChild.style['-webkit-transform'] = 'rotate('+String(theta)+'deg)';
+	
+	card.setAttribute('data-fdkPActive',JSON.stringify({'left':bounds.left,'top':bounds.top,'vx':dv.x,'vy':dv.y,'rotate':theta,'time':(new Date()).getTime()}));
+	}
+
+fdk['physics']['end'] = function(card) {
+	card.firstChild.style['-webkit-transform'] = 'rotate(0deg)';
 	}
