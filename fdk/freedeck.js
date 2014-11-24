@@ -123,10 +123,11 @@ fdk['onMouseDown'] = function(event) {
 	}
 
 fdk['onMouseUp'] = function(event) {
+	var card = event.currentTarget;
+	card.removeEventListener('mousemove',fdk['onMouseMove']);
+	card.removeEventListener('touchmove',fdk['onTouchMove']);
 	fdk['physics']['end'](card);
 	card.removeAttribute('data-fdkPActive');
-	event.currentTarget.removeEventListener('mousemove',fdk['onMouseMove']);
-	event.currentTarget.removeEventListener('touchmove',fdk['onTouchMove']);
 	}
 
 fdk['onMouseMove'] = function(event) {
