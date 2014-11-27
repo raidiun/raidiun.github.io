@@ -183,22 +183,26 @@ fdk['physics']['simulate'] = function(card) {
 	var bounds = card.getBoundingClientRect();
 	bounds = {'top':card.offsetTop,'left':card.offsetLeft};
 	
-	var gravity = 0.05;
+	var gravity = 0.025;
 	
-	var now =  (new Date()).getTime();
+	var dt = (new Date()).getTime()-physData.time
+	
 	var dr = {};
 	dr.x = bounds.left - physData.left;
 	dr.y = bounds.top - physData.top;
 	
 	var dv = {};
-	dv.x = dr.x/(now-physData.time);
-	dv.y = dr.y/(now-physData.time);
+	dv.x = dr.x/(dt);
+	dv.y = dr.y/(dt);
 	
 	var a = {};
-	a.x = (dv.x-physData.vx)/(now-physData.time);
-	a.y = (dv.y-physData.vy)/(now-physData.time) + gravity;
+	a.x = (dv.x-physData.vx)/(dt);
+	a.y = (dv.y-physData.vy)/(dt) + gravity;
 	
 	var theta = Math.atan(a.x/a.y)*180/Math.PI;
+	if(Math.abs(theta-physData.rotate)/dt>0.1) {
+		theta += 10*Math.abs(theta)/theta;
+		}
 	
 	card.firstChild.style['-webkit-transform-origin'] = String(-offset.x)+' '+String(-offset.y);
 	card.firstChild.style['-webkit-transform'] = 'rotate('+String(theta)+'deg)';

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script>
+			function onCanvasTouchEv(e) {
+				ctx.fillStyle="#000";
+				ctx.fillRect(0,0,canvas.width,canvas.height);
+				
+				var bcr = canvas.getBoundingClientRect();
+				bcr.width = bcr.right - bcr.left;
+				bcr.height = bcr.bottom - bcr.top;
+				
+				var idx = e.touches.length;
+				while(idx) {
+					idx--;
+					var x = canvas.width*(bcr.left - e.touches[nTouches].clientX)/bcr.width;
+					var y = canvas.height*(bcr.top - e.touches[nTouches].clientY)/bcr.height;
+					drawTouch(idx,x,y);
+					}
+				}
+		function drawTouch(idx,x,y) {
+			ctx.fillStyle="#fff";
+			ctx.beginPath();
+			ctx.arc(95,50,40,0,2*Math.PI);
+			ctx.closePath();
+			}
+			</script>
+		</head>
+	<body>
+		<canvas id="canv" width="200" height="100" style="border:1px solid #000000;"/>
+		<script>
+			var canvas = document.getElementById("canv");
+			var ctx = canvas.getContext("2d");
+			</script>
+		</body>
+	</html>
