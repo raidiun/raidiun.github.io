@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<style>
+			body {
+				margin:0;
+				}
+			</style>
 		<script>
 			function onCanvasTouchEv(e) {
 				ctx.fillStyle="#000";
@@ -13,23 +18,27 @@
 				var idx = e.touches.length;
 				while(idx) {
 					idx--;
-					var x = canvas.width*(bcr.left - e.touches[nTouches].clientX)/bcr.width;
-					var y = canvas.height*(bcr.top - e.touches[nTouches].clientY)/bcr.height;
+					var x = canvas.width*(e.touches[idx].clientX - bcr.left)/bcr.width;
+					var y = canvas.height*(e.touches[idx].clientY - bcr.top)/bcr.height;
 					drawTouch(idx,x,y);
 					}
 				}
 		function drawTouch(idx,x,y) {
 			ctx.fillStyle="#fff";
 			ctx.beginPath();
-			ctx.arc(95,50,40,0,2*Math.PI);
+			ctx.arc(x-10,y-10,20,0,2*Math.PI);
 			ctx.closePath();
+			ctx.fill();
 			}
 			</script>
 		</head>
 	<body>
-		<canvas id="canv" width="200" height="100" style="border:1px solid #000000;"/>
+		<canvas id="canv" width="500" height="1000" style="width:100%;height:100%border:1px solid #000000;"/>
 		<script>
 			var canvas = document.getElementById("canv");
+			canvas.addEventListener("touchstart",onCanvasTouchEv);
+			canvas.addEventListener("touchmove",onCanvasTouchEv);
+			canvas.addEventListener("touchend",onCanvasTouchEv);
 			var ctx = canvas.getContext("2d");
 			</script>
 		</body>
