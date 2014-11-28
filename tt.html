@@ -7,6 +7,60 @@
 				}
 			</style>
 		<script>
+			var tid = 0;
+			function getTouchID() {
+				return(tid++);
+				}
+		
+			var tolerance = 10;
+		
+			function Touch(touch) {
+				this.tid = getTouchID();
+				this.to = touch;
+				this.updated = true;
+				}
+		
+			Touch.prototype.update = function(touch) {
+				this.to = touch;
+				this.updated = true;
+				}
+		
+			Touch.prototype.matches = function(touch) {
+				if(Math.abs(this.to.clientX-touch.clientX)<tolerance && Math.abs(this.to.clientY-touch.clientY)<tolerance) {
+					return(true);
+					}
+				else {
+					return(false);
+					}
+				}
+		
+			function clearUpdated() {
+				for(tTouchKey in trackedTouches) {
+					trackedTouches[tTouchKey].updated = false;
+					}
+				}
+		
+			function cleanTracked() {
+				for(tTouchKey in trackedTouches) {
+					if(trackedTouches[tTouchKey].updated == false) {
+						trackedTouches = trackedTouches.splice(tTouchKey,1);
+						}
+					}
+				}
+		
+			function identifyTouch(touch) {
+				for(tTouchKey in trackedTouches) {
+					if(trackedTouches[tTouchKey].matches(touch)) {
+						trackedTouches[tTouchKey].update(touch);
+						return(trackedTouches[tTouchKey]);
+						}
+					}
+				var eol = trackedTouches.push(new Touch(touch)) - 1;
+				return(trackedTouches[eol]);
+				}
+		
+			var trackedTouches = [];
+		
 			function onCanvasTouchEv(e) {
 				ctx.fillStyle="#000";
 				ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -15,24 +69,37 @@
 				bcr.width = bcr.right - bcr.left;
 				bcr.height = bcr.bottom - bcr.top;
 				
+				clearUpdated();
+				
 				var idx = e.touches.length;
 				while(idx) {
 					idx--;
+					var identifiedAs = identifyTouch(e.touches[idx]);
+					
 					var x = canvas.width*(e.touches[idx].clientX - bcr.left)/bcr.width;
 					var y = canvas.height*(e.touches[idx].clientY - bcr.top)/bcr.height;
-					drawTouch(idx,x,y);
+					
+					drawTouch(identifiedAs,x,y);
+					}
+				
+				cleanTracked();
+				
+				if(trackedTouches.length == 0) {
+					tid=0;
 					}
 				}
-		function drawTouch(id,x,y) {
-			ctx.fillStyle="#fff";
-			ctx.beginPath();
-			ctx.arc(x-20,y-20,20,0,2*Math.PI);
-			ctx.closePath();
-			ctx.fill();
-			ctx.fillStyle="#aaa";
-			ctx.font="20px Verdana";
-			ctx.fillText(String(id),x-20,y-20);
-			}
+		
+			function drawTouch(id,x,y) {
+				ctx.fillStyle="#fff";
+				ctx.beginPath();
+				ctx.arc(x-20,y-20,20,0,2*Math.PI);
+				ctx.closePath();
+				ctx.fill();
+				ctx.fillStyle="#aaa";
+				ctx.font="20px Verdana";
+				ctx.fillText(String(id.tid),x-20,y-20);
+				}
+		
 			</script>
 		</head>
 	<body>
