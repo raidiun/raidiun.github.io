@@ -23,12 +23,15 @@
 					drawTouch(idx,x,y);
 					}
 				}
-		function drawTouch(idx,x,y) {
+		function drawTouch(id,x,y) {
 			ctx.fillStyle="#fff";
 			ctx.beginPath();
-			ctx.arc(x-10,y-10,20,0,2*Math.PI);
+			ctx.arc(x-20,y-20,20,0,2*Math.PI);
 			ctx.closePath();
 			ctx.fill();
+			ctx.fillStyle="#555";
+			ctx.font="20px Verdana";
+			ctx.fillText(String(id),x,y);
 			}
 			</script>
 		</head>
