@@ -97,13 +97,13 @@
 				ctx.fill();
 				ctx.fillStyle="#aaa";
 				ctx.font="20px Verdana";
-				ctx.fillText(String(id.tid),x-20,y-20);
+				ctx.fillText(String(id.to.identifier),x-20,y-20);
 				}
 		
 			</script>
 		</head>
 	<body>
-		<canvas id="canv" width="500" height="1000" style="width:100%;height:100%border:1px solid #000000;"/>
+		<canvas id="canv" width="500" height="1000" style="width:100%;height:100%;"/>
 		<script>
 			var canvas = document.getElementById("canv");
 			canvas.addEventListener("touchstart",onCanvasTouchEv);
