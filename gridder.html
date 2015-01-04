@@ -1,0 +1,141 @@
+<html>
+	<head>
+		<title>Gridder</title>
+		<script>
+			function onImgSelect(event) {
+				var image = event.target.files[0];
+				var reader = new FileReader;
+				var bkgDims = {};
+				reader.onload = function(e) {
+					var imgElem = new Image();
+					imgElem.onload = function(e) {
+						calcSize(this.width,this.height);
+						}
+					imgElem.src = e.target.result;
+					document.body.style.backgroundImage = 'url("' + e.target.result + '")';
+					}
+				reader.readAsDataURL(image);
+				}
+		
+			function calcSize(w,h) {
+				var bkgDims = {"width":w,"height":h}
+				var scale = Math.min(window.getComputedStyle(document.body).width.slice(0,-2)/bkgDims.width,
+									 window.getComputedStyle(document.body).height.slice(0,-2)/bkgDims.height);
+				bkgDims.width *= scale;
+				bkgDims.height *= scale;
+				document.body.setAttribute("data-bkg-dims",JSON.stringify(bkgDims));
+				drawGrid();
+				}
+		
+			function toggleControls() {
+				var state = document.getElementById('controls').style.visibility;
+				if(state == "hidden") {
+					document.getElementById('controls').style.visibility = "visible";
+					}
+				else {
+					document.getElementById('controls').style.visibility = "hidden";
+					}
+				}
+		
+			function drawGrid() {
+				var imgSize = JSON.parse(document.body.getAttribute("data-bkg-dims"));
+				
+				var xLines = document.getElementById("xgrid").value - 1;
+				var yLines = document.getElementById("ygrid").value - 1;
+				var xGap = imgSize.width/(xLines+1);
+				var yGap = imgSize.height/(yLines+1);
+				
+				var gridText = '<svg width="'+imgSize.width+'" height="'+imgSize.height+'" viewBox="0 0 '+imgSize.width+' '+imgSize.height+'">';
+				
+				while(xLines) {
+					var xPos = xLines*xGap;
+					xLines--;
+					gridText += '<line x1="'+xPos+'" y1="0" x2="'+xPos+'" y2="'+imgSize.height+'" class="gridLine"/>';
+					}
+				
+				while(yLines) {
+					var yPos = yLines*yGap;
+					yLines--;
+					gridText += '<line x1="0" y1="'+yPos+'" x2="'+imgSize.width+'" y2="'+yPos+'" class="gridLine"/>';
+					}
+				
+				gridText += '</svg>';
+				document.getElementById("blanket").innerHTML = gridText;
+				}
+		
+			function gridColour(colour) {
+				document.styleSheets[0].rules[4].style.stroke = colour;
+				}
+		
+			window.addEventListener("resize",function(){
+									onImgSelect({"target":document.getElementById("imgSelector")});
+									});
+			</script>
+		<style>
+			html {
+				height:100%;
+				}
+			body {
+				background-color:black;
+				background-size:contain;
+				background-repeat:no-repeat;
+				width:100%;
+				height:100%;
+				position:relative;
+				margin:0;
+				padding:0;
+				overflow:hidden;
+				}
+			#blanket {
+				width:100%;
+				height:100%;
+				}
+			#controls {
+				display:inline-block;
+				background-color:#ddd;
+				overflow:hidden;
+				padding:0.5em;
+				position:fixed;
+				top:3em;
+				left:3em;
+				z-index:1;
+				visibility:visible;
+				font-family:sans-serif;
+				}
+			.gridLine {
+				stroke:#fff;
+				stroke-width:2;
+				}
+			</style>
+		</head>
+	<body>
+		<div id="controls">
+			Choose Image: <input id="imgSelector" type="file"/>
+			<br/>
+			Set Grid Cells: x <input type="number" value="3" id="xgrid"/> y <input type="number" value="3" id="ygrid"/>
+			<br/>
+			Grid Line Colour: <button onclick="gridColour('black')">Black</button>
+								<button onclick="gridColour('white')">White</button>
+								<select id="colPicker" name="gCol">
+									<option value="cyan">Cyan</option>
+									<option value="yellow">Yellow</option>
+									<option value="cyan">Cyan</option>
+									<option value="cyan">Cyan</option>
+									<option value="cyan">Cyan</option>
+									<option value="cyan">Cyan</option>
+									<option value="cyan">Cyan</option>
+									<option value="cyan">Cyan</option>
+								</select>
+			<br/>
+			<script>
+				document.getElementById("imgSelector").addEventListener("change",onImgSelect,false);
+				document.getElementById("xgrid").addEventListener("change",drawGrid,false);
+				document.getElementById("ygrid").addEventListener("change",drawGrid,false);
+				document.getElementById("colPicker").addEventListener("change",function(){gridColour(this.value)},false);
+				</script>
+			Tap anywhere to show/hide controls
+			</div>
+		<div id="blanket" onclick="toggleControls()">
+			</div>
+		</body>
+	</html>
