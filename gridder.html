@@ -38,12 +38,18 @@
 				}
 		
 			function drawGrid() {
+				var squares = document.getElementById("squaresCB").checked;
 				var imgSize = JSON.parse(document.body.getAttribute("data-bkg-dims"));
 				
 				var xLines = document.getElementById("xgrid").value - 1;
 				var yLines = document.getElementById("ygrid").value - 1;
 				var xGap = imgSize.width/(xLines+1);
 				var yGap = imgSize.height/(yLines+1);
+				
+				if(squares) {
+					yGap = xGap;
+					yLines = Math.ceil(imgSize.height/yGap);
+					}
 				
 				var gridText = '<svg width="'+imgSize.width+'" height="'+imgSize.height+'" viewBox="0 0 '+imgSize.width+' '+imgSize.height+'">';
 				
@@ -67,6 +73,10 @@
 				document.styleSheets[0].rules[4].style.stroke = colour;
 				}
 		
+			function gridThick(thick) {
+				document.styleSheets[0].rules[4].style.strokeWidth = thick;
+				}
+		
 			window.addEventListener("resize",function(){
 									onImgSelect({"target":document.getElementById("imgSelector")});
 									});
@@ -76,7 +86,7 @@
 				height:100%;
 				}
 			body {
-				background-color:black;
+				background-color:white;
 				background-size:contain;
 				background-repeat:no-repeat;
 				width:100%;
@@ -114,24 +124,26 @@
 			<br/>
 			Set Grid Cells: x <input type="number" value="3" id="xgrid"/> y <input type="number" value="3" id="ygrid"/>
 			<br/>
+			<input type="checkbox" id="squaresCB"/> Set Square Grid (Uses x value)
+			<br/>
 			Grid Line Colour: <button onclick="gridColour('black')">Black</button>
 								<button onclick="gridColour('white')">White</button>
 								<select id="colPicker" name="gCol">
 									<option value="cyan">Cyan</option>
 									<option value="yellow">Yellow</option>
-									<option value="cyan">Cyan</option>
-									<option value="cyan">Cyan</option>
-									<option value="cyan">Cyan</option>
-									<option value="cyan">Cyan</option>
-									<option value="cyan">Cyan</option>
-									<option value="cyan">Cyan</option>
+									<option value="red">Red</option>
+									<option value="chartreuse">Green</option>
 								</select>
+			<br/>
+			Grid Line Thickness: <input type="range" min="0.2" step="0.2" value="2" max="4" id="gridThick" />
 			<br/>
 			<script>
 				document.getElementById("imgSelector").addEventListener("change",onImgSelect,false);
 				document.getElementById("xgrid").addEventListener("change",drawGrid,false);
 				document.getElementById("ygrid").addEventListener("change",drawGrid,false);
+				document.getElementById("squaresCB").addEventListener("change",drawGrid,false);
 				document.getElementById("colPicker").addEventListener("change",function(){gridColour(this.value)},false);
+				document.getElementById("gridThick").addEventListener("change",function(){gridThick(this.value)},false);
 				</script>
 			Tap anywhere to show/hide controls
 			</div>
