@@ -1,0 +1,242 @@
+<html>
+	<head>
+		<title>Gridder v2.0</title>
+		<script>
+			var imgElem;
+			var strokeColour = "white";
+			
+			function onImgSelect(event) {
+				var image = event.target.files[0];
+				var reader = new FileReader;
+				var canvas = document.getElementById("mainCanv");
+				var canvCtx = canvas.getContext("2d");
+				
+				reader.onload = function(e) {
+					imgElem = new Image();
+					imgElem.onload = function(e) {
+						var bkgDims = calcSize(this.width,this.height);
+						
+						canvas.style.width = bkgDims.width;
+						canvas.width = bkgDims.width;
+						canvas.style.height = bkgDims.height;
+						canvas.height = bkgDims.height;
+						
+						canvCtx.drawImage(imgElem,0,0,bkgDims.width,bkgDims.height);
+						gridColour(strokeColour);
+						}
+					imgElem.src = e.target.result;
+					}
+				reader.readAsDataURL(image);
+				}
+		
+			function calcSize(w,h) {
+				var bkgDims = {"width":w,"height":h}
+				var scale = Math.min(window.getComputedStyle(document.body).width.slice(0,-2)/bkgDims.width,
+									 window.getComputedStyle(document.body).height.slice(0,-2)/bkgDims.height);
+				bkgDims.width *= scale;
+				bkgDims.height *= scale;
+				document.getElementById("mainCanv").setAttribute("data-bkg-dims",JSON.stringify(bkgDims));
+				return(bkgDims);
+				}
+		
+			function toggleControls() {
+				var state = document.getElementById('controls').style.visibility;
+				if(state == "hidden") {
+					document.getElementById('controls').style.visibility = "visible";
+					}
+				else {
+					document.getElementById('controls').style.visibility = "hidden";
+					}
+				}
+		
+			function drawGrid() {
+				var squares = document.getElementById("squaresCB").checked;
+				var canvas = document.getElementById("mainCanv");
+				var canvCtx = canvas.getContext("2d");
+				var imgSize = JSON.parse(canvas.getAttribute("data-bkg-dims"));
+				
+				//Redraw image
+				canvCtx.drawImage(imgElem,0,0,imgSize.width,imgSize.height);
+				
+				//Set stroke styles
+				canvCtx.strokeStyle = strokeColour;
+				canvCtx.lineWidth = document.getElementById("gridThick").value;
+				
+				var xLines = document.getElementById("xgrid").value - 1;
+				var yLines = document.getElementById("ygrid").value - 1;
+				var xGap = imgSize.width/(xLines+1);
+				var yGap = imgSize.height/(yLines+1);
+				
+				function drawLine(x0,y0,x1,y1) {
+					canvCtx.moveTo(x0,y0);
+					canvCtx.lineTo(x1,y1);
+					}
+				
+				if(squares) {
+					yGap = xGap;
+					yLines = Math.ceil(imgSize.height/yGap);
+					}
+				
+				canvCtx.beginPath();
+				while(xLines) {
+					drawLine(xLines*xGap,0,xLines*xGap,imgSize.height);
+					xLines--;
+					}
+				while(yLines) {
+					drawLine(0,yLines*yGap,imgSize.width,yLines*yGap);
+					yLines--;
+					}
+				canvCtx.closePath();
+				canvCtx.stroke();
+				}
+		
+			function gridColour(colour) {
+				if(colour == "invert") {
+					strokeColour = colour;
+					var squares = document.getElementById("squaresCB").checked;
+					var canvas = document.getElementById("mainCanv");
+					var canvCtx = canvas.getContext("2d");
+					var imgSize = JSON.parse(canvas.getAttribute("data-bkg-dims"));
+					
+					//Redraw image
+					canvCtx.drawImage(imgElem,0,0,imgSize.width,imgSize.height);
+					var lineWidth = Math.round(document.getElementById("gridThick").value/2);
+					
+					var xLines = document.getElementById("xgrid").value - 1;
+					var yLines = document.getElementById("ygrid").value - 1;
+					var xGap = imgSize.width/(xLines+1);
+					var yGap = imgSize.height/(yLines+1);
+					
+					if(squares) {
+						yGap = xGap;
+						yLines = Math.ceil(imgSize.height/yGap);
+						}
+					
+					function drawLine(data,x0,y0,x1,y1) {
+						if(x0 == x1) {//Vertical line
+							invertRect(data,x0-lineWidth,y0,x1+lineWidth,y1);
+							}
+						else {//Horiz line
+							invertRect(data,x0,y0-lineWidth,x1,y1+lineWidth);
+							}
+						}
+					
+					function invertRect(data,x0,y0,x1,y1) {
+						for(var xidx=x0;xidx<x1;xidx+=1) {
+							for(var yidx=y0;yidx<y1;yidx+=1) {
+								pixN = 4*(xidx+yidx*canvas.width);
+								data.data[pixN+0] = 255-data.data[pixN+0];
+								data.data[pixN+1] = 255-data.data[pixN+1];
+								data.data[pixN+2] = 255-data.data[pixN+2];
+								}
+							}
+						}
+					
+					var imgData = canvCtx.getImageData(0,0,canvas.width,canvas.height);
+					
+					while(xLines) {
+						drawLine(imgData,Math.round(xLines*xGap),0,
+											Math.round(xLines*xGap),Math.round(canvas.height));
+						xLines--;
+						}
+					while(yLines) {
+						drawLine(imgData,0,Math.round(yLines*yGap),
+											Math.round(canvas.width),Math.round(yLines*yGap));
+						yLines--;
+						}
+					
+					canvCtx.putImageData(imgData,0,0);
+					}
+				else {
+					strokeColour = colour;
+					drawGrid();
+					}
+				}
+		
+			window.addEventListener("resize",function(){
+									onImgSelect({"target":document.getElementById("imgSelector")});
+									});
+			</script>
+		<style>
+			html {
+				height:100%;
+				}
+			body {
+				background-color:white;
+				width:100%;
+				height:100%;
+				position:relative;
+				margin:0;
+				padding:0;
+				overflow:hidden;
+				}
+			#blanket {
+				position:fixed;
+				top:0;
+				left:0;
+				width:100%;
+				height:100%;
+				z-index:1;
+				}
+			#controls {
+				display:inline-block;
+				background-color:#ddd;
+				border-radius:0.5em;
+				overflow:hidden;
+				padding:0.5em;
+				position:fixed;
+				top:3em;
+				left:3em;
+				z-index:2;
+				visibility:visible;
+				font-family:sans-serif;
+				opacity:0.8;
+				}
+			.centre {
+				display:block;
+				width:100%;
+				text-align:center;
+				font-size:0.8em;
+				}
+			input[type="number"] {
+				width:5em;
+				}
+			</style>
+		</head>
+	<body>
+		<div id="controls">
+			<span class="centre">Gridder v2.0</span>
+			Choose Image: <input id="imgSelector" type="file"/>
+			<br/>
+			Set Grid Cells: x <input type="number" value="3" id="xgrid"/> y <input type="number" value="3" id="ygrid"/>
+			<br/>
+			Set Square Grid:<input type="checkbox" id="squaresCB"/>  (Uses x value)
+			<br/>
+			Grid Line Colour: <button onclick="gridColour('black')">Black</button>
+								<button onclick="gridColour('white')">White</button>
+								<select id="colPicker" name="gCol">
+									<option value="cyan">Cyan</option>
+									<option value="yellow">Yellow</option>
+									<option value="red">Red</option>
+									<option value="chartreuse">Green</option>
+									<option value="invert">Invert</option>
+								</select>
+			<br/>
+			Grid Line Thickness: <input type="range" min="1" step="0.2" value="2" max="4" id="gridThick" />
+			<br/>
+			<script>
+				document.getElementById("imgSelector").addEventListener("change",onImgSelect,false);
+				document.getElementById("xgrid").addEventListener("change",function(){gridColour(document.getElementById("colPicker").value)},false);
+				document.getElementById("ygrid").addEventListener("change",function(){gridColour(document.getElementById("colPicker").value)},false);
+				document.getElementById("squaresCB").addEventListener("change",function(){gridColour(document.getElementById("colPicker").value)},false);
+				document.getElementById("colPicker").addEventListener("change",function(){gridColour(this.value)},false);
+				document.getElementById("gridThick").addEventListener("change",function(){gridColour(document.getElementById("colPicker").value)},false);
+				</script>
+			<span class="centre">Tap anywhere to show/hide controls...</span>
+			</div>
+		<canvas id="mainCanv"></canvas>
+		<div id="blanket" onclick="toggleControls()">
+			</div>
+		</body>
+	</html>
+
