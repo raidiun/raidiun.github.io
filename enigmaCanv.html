@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!--Enigma Functional Script-->
+		<script>
+			var encodings = {
+				0:{sequence:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",nch:""},
+				1:{sequence:"EKMFLGDQVZNTOWYHXUSPAIBRCJ",nch:"Q"},
+				2:{sequence:"AJDKSIRUXBLHWTMCQGZNPYFVOE",nch:"E"},
+				3:{sequence:"BDFHJLCPRTXVZNYEIWGAKMUSQO",nch:"V"},
+				4:{sequence:"ESOVPZJAYQUIRHXLNFTGKDCMWB",nch:"J"},
+				5:{sequence:"VZBRGITYUPSDNHLXAWMJQOFECK",nch:"Z"},
+				6:{sequence:"JPGVOUMFYQBENHZRDKASXLICTW",nch:"ZM"},
+				7:{sequence:"NZJHGRCXMYSWBOUFAIVLPEKQDT",nch:"ZM"},
+				8:{sequence:"FKQHTLXOCBJSPDZRAMEWNIUYGV",nch:"ZM"},
+				9:{sequence:"LEYJVCNIXWPBQMDRTAKZGFUHOS",nch:"",name:"Beta"},
+				10:{sequence:"FSOKANUERHMBTIYCWLQPZXVGJD",nch:"",name:"Gamma"},
+				A:{sequence:"EJMZALYXVBWFCRQUONTSPIKHGD",nch:""},
+				B:{sequence:"YRUHQSLDPXNGOKMIEBFZCWVJAT",nch:""},
+				C:{sequence:"FVPJIAOYEDRZXWGCTKUQSBNMHL",nch:""},
+				BThin:{sequence:"ENKQAUYWJICOPBLMDXZVFTHRGS",nch:""},
+				CThin:{sequence:"RDOBJNTKVEHMLFCWZAXGYIPSUQ",nch:""}
+				}
+			for(key in encodings) {encodings[key].sequence = encodings[key].sequence.split("");}
+			for(var x=1;x<9;x++) {encodings[x].nch = encodings[x].nch.split("");}
+			
+			function charToIndex(char) {return(char.toUpperCase().charCodeAt(0) - 65)};
+			function indexToChar(idx) {return(String.fromCharCode(idx+65))};
+		
+			function Rotor(number) {
+				this.number = number;
+				this.sequence = ([]).concat(encodings[number].sequence);
+				this.tracker = ([]).concat(encodings[0].sequence);
+				this.ring = ([]).concat(encodings[0].sequence);
+				this.notches = encodings[number].nch;
+				}
+		
+			Rotor.prototype = {
+				constructor:Rotor,
+				setRing:function(ring) {
+					while(this.ring[0] != ring) {
+						this.ring.push(this.ring.shift());
+						}
+					},
+				setStart:function(n) {
+					while(this.ring[0] != n) {
+						this.advance();
+						}
+					},
+				advance:function() {
+					this.sequence.push(this.sequence.shift());
+					this.tracker.push(this.tracker.shift());
+					this.ring.push(this.ring.shift());
+					},
+				encode:function(letter) {
+					letter = this.sequence[charToIndex(letter)]
+					return(indexToChar(this.tracker.indexOf(letter)));
+					},
+				decode:function(letter) {
+					letter = this.tracker[charToIndex(letter)]
+					return(indexToChar(this.sequence.indexOf(letter)));
+					},
+				isNotched:function() {
+					if(this.notches.indexOf(this.ring[0]) !== -1) {
+						return(true);
+						}
+					return(false);
+					}
+				}
+		
+			function createRotor(num,ring,start) {
+				var nr = new Rotor(num);
+				nr.setRing(ring);
+				nr.setStart(start);
+				return(nr);
+				}
+		
+			function createReflector(name,start) {
+				var nr = new Rotor(name);
+				nr.setStart(start);
+				return(nr);
+				}
+		
+			function encode(rotorSet,letter) {
+				var l = rotorSet.length;
+				var i = 0;
+				//console.log("Input letter is: " + letter);
+				while(i<l) {
+					letter = rotorSet[i].encode(letter);
+					//console.log("Rotor at index: " + i + " encodes to: " + letter);
+					i++;
+					}
+				i--;
+				while(i) {
+					i--;
+					letter = rotorSet[i].decode(letter)
+					//console.log("Rotor at index: " + i + " decodes to: " + letter);
+					}
+				return(letter);
+				}
+		
+			function advance(rotorSet) {
+				rotorSet[0].advance();
+				var rotorCount = rotorSet.length - 1;
+				
+				var tba = [];
+				
+				for(var i=1;i<rotorCount;i++) {
+					if(rotorSet[i-1].isNotched() || (rotorSet[i].isNotched() && i!=rotorCount-1)) {
+						tba.push(i);
+						}
+					}
+				for(elem in tba) {
+					rotorSet[tba[elem]].advance();
+					}
+				}
+		
+			function fourthRotor() {
+				var types = ["rot","ring","start"];
+				if(document.getElementById("4rotQ").checked) {
+					for(entry in types) {
+						entry = types[entry];
+						var nsel = document.createElement("select");
+						nsel.id = entry+"3";
+						if(entry == "rot") {
+							nsel.innerHTML = inner;
+							nsel.value = 4;
+							}
+						else {
+							nsel.innerHTML = alphaOpt;
+							nsel.value = "A";
+							}
+						var osel = document.getElementById(entry+"2");
+						osel.parentNode.insertBefore(nsel,osel);
+						}
+					}
+				else {
+					for(entry in types) {
+						entry = types[entry];
+						var nsel = document.getElementById(entry+"3");
+						nsel.parentNode.removeChild(nsel);
+						}
+					}
+				}
+		
+			//var rotors = [createRotor(3,'a','a'),createRotor(2,'a','a'),createRotor(1,'a','a'),createReflector("B",'a')]
+			var rotors;
+			
+			function setupRotors() {
+				function get(id) {return(document.getElementById(id));}
+				rotors = [createRotor(get("rot0").value,get("ring0").value,get("start0").value),
+						  createRotor(get("rot1").value,get("ring1").value,get("start1").value),
+						  createRotor(get("rot2").value,get("ring2").value,get("start2").value),
+						  createReflector(get("refl").value,'A')];
+					if(get("4rotQ").checked) {
+						rotors.splice(3,0,createRotor(get("rot3").value,get("ring3").value,get("start3").value));
+						}
+				}
+		
+			function updateDisplay() {
+				function get(id) {return(document.getElementById(id));}
+				get("start0").value = rotors[0].ring[0];
+				get("start1").value = rotors[1].ring[0];
+				get("start2").value = rotors[2].ring[0];
+				if(get("4rotQ").checked) {
+					get("start3").value = rotors[3].ring[0];
+					}
+				}
+		
+			/*function send(e,ip) {
+				var ob = document.getElementById("output");
+				
+				if(ip == undefined) {
+					var ib = document.getElementById("input");
+					
+					var char = ib.value.toUpperCase();
+					ib.value = "";
+					var len = char.length;
+					if(len > 1) {
+						for(var i=0;i<len;i++) {
+							send({},char[i]);
+							}
+						return;
+						}
+					}
+				else {
+					char = ip;
+					}
+				
+				if(/[\., ]/.test(char)) {char="X";}
+				var ccode = char.charCodeAt(0);
+				if(ccode < 65 || ccode > 90 || char == '') {return;}
+				
+				advance(rotors);
+				updateDisplay();
+				
+				ob.innerHTML += encode(rotors,char);
+				if(ob.innerHTML.replace(/\s/g,'').length%4 == 0) {ob.innerHTML += ' ';}
+				}*/
+		
+			function sendOnKeyDown(e) {
+				var ob = document.getElementById("output");
+				var ccode = e.keyCode;
+				
+				if(ccode < 65 || ccode > 90) {return;}
+				var char = String.fromCharCode(ccode);
+				
+				advance(rotors);
+				updateDisplay();
+				
+				var char = encode(rotors,char);
+				var ob = get("output")
+				ob.innerHTML += char;
+				if(ob.innerHTML.replace(/\s/g,'').length%4 == 0) {ob.innerHTML += ' ';}
+				
+				return(char);
+				}
+		
+			</script>
+		
+		<!--Enigma Canvas Script-->
+		<script>
+			var keyOffsets = {
+				'Q':[0,0],'W':[1,0],'E':[2,0],'R':[3,0],'T':[4,0],'Z':[5,0],'U':[6,0],'I':[7,0],'O':[8,0],
+				'A':[0.5,1],'S':[1.5,1],'D':[2.5,1],'F':[3.5,1],'G':[4.5,1],'H':[5.5,1],'J':[6.5,1],'K':[7.5,1],
+				'P':[0,2],'Y':[1,2],'X':[2,2],'C':[3,2],'V':[4,2],'B':[5,2],'N':[6,2],'M':[7,2],'L':[8,2]};
+		
+			function fillEllipse(canvas,ctx,cx,cy,rx,ry) {
+				var start = 0;
+				var end = 2 * Math.PI;
+				
+				var circumference = 2*Math.max(rx,ry);
+				var scaleX = 2*rx / circumference;
+				var scaleY = 2*ry / circumference;
+				
+				ctx.save();
+				ctx.translate(cx,cy);
+				ctx.scale(scaleX, scaleY);
+				ctx.beginPath();
+				ctx.arc(0,0,circumference/2,start,end,false);
+				ctx.closePath();
+				ctx.restore();
+				
+				ctx.fill();
+				}
+		
+			function get(id) {return(document.getElementById(id))}
+		
+			function drawCanv() {
+				var canvas = get("enigmaCanv");
+				var ctx = canvas.getContext("2d");
+				
+				canvas.width = canvas.width;
+				
+				drawBkg(canvas,ctx);
+				var lc = 90;
+				while(lc-64) {
+					drawKey(canvas,ctx,String.fromCharCode(lc),false);
+					drawLight(canvas,ctx,String.fromCharCode(lc),false);
+					lc--;
+					}
+				ctx.fillStyle = "red";
+				
+				}
+		
+			function drawBkg(canvas,ctx) {
+				ctx.fillStyle = "#d6742d";
+				ctx.fillRect(10,10,canvas.width-20,canvas.height-20);
+				ctx.fillStyle = "#535353";
+				ctx.fillRect(15,15,450,350);
+				}
+		
+			function drawKey(canvas,ctx,key,state) {
+				var baseXY = [20,220];
+				var offsetSizes = [50,50];
+				
+				var x = baseXY[0] + offsetSizes[0]*keyOffsets[key][0];
+				var y = baseXY[1] + offsetSizes[1]*keyOffsets[key][1];
+				
+				ctx.fillStyle = "#535353";
+				ctx.fillRect(x,y,40,40);
+				
+				ctx.fillStyle = "#000";
+				fillEllipse(canvas,ctx,x+20,y+38,6,5);
+				
+				ctx.fillStyle = "#999";
+				ctx.fillRect(x+16,y+20,8,18);
+				fillEllipse(canvas,ctx,x+20,y+38,4,3);
+				
+				if(state) {y+=10;}
+				
+				ctx.fillStyle = "#c8c8c8";
+				fillEllipse(canvas,ctx,x+20,y+14,20,14);
+				
+				ctx.fillStyle = "#000";
+				fillEllipse(canvas,ctx,x+20,y+14,16,10);
+				
+				var n = 'PQWERTZUIO'.split("").indexOf(key)
+				if(n != -1) {
+					ctx.font = "10px sans-serif";
+					ctx.textBaseline = "middle";
+					ctx.textAlign = "center";
+					ctx.fillStyle = "#fff";
+					ctx.fillText(key,x+20,y+20);
+					ctx.fillText(String(n),x+20,y+10);
+					}
+				else {
+					ctx.font = "15px sans-serif";
+					ctx.textBaseline = "middle";
+					ctx.textAlign = "center";
+					ctx.fillStyle = "#fff";
+					ctx.fillText(key,x+20,y+16);
+					}
+				}
+		
+			function drawLight(canvas,ctx,light,state) {
+				var baseXY = [20,20];
+				var offsetSizes = [50,50];
+				
+				var x = baseXY[0] + offsetSizes[0]*keyOffsets[light][0];
+				var y = baseXY[1] + offsetSizes[1]*keyOffsets[light][1];
+				
+				ctx.fillStyle = "#535353";
+				ctx.fillRect(x,y,40,40);
+				
+				ctx.fillStyle = "#000";
+				fillEllipse(canvas,ctx,x+20,y+14,20,14);
+				
+				if(state) {ctx.fillStyle = "#ff9";}
+				else {ctx.fillStyle = "#bbb";}
+				
+				ctx.font = "15px sans-serif";
+				ctx.textBaseline = "middle";
+				ctx.textAlign = "center";
+				ctx.fillText(light,x+20,y+16);
+				
+				}
+			</script>
+		
+		<style>
+			body {
+				background-color:#ccc;
+				}
+			</style>
+		
+		</head>
+	<body>
+		<form id="enigmaSettings">
+			<div>
+				Rotor/Reflector Configuration:
+				<select id="refl">
+					<option value="A">A</option>
+					<option value="B" selected>B</option>
+					<option value="C">C</option>
+					<option value="BThin">B Thin</option>
+					<option value="CThin">C Thin</option>
+				</select>
+				<select id="rot2"></select>
+				<select id="rot1"></select>
+				<select id="rot0"></select>
+				(Four Rotors:<input id="4rotQ" type="checkbox" />)
+				<!--Populate Selects && Add Event Listener-->
+				<script>
+					//Build Options
+					var inner = "";
+					var rotOpt = {1:'I',2:'II',3:'III',4:'IV',5:'V',6:'VI',7:'VII',8:'VIII'};
+					for(key in rotOpt) {
+						inner += '<option value="'+key+'">'+rotOpt[key]+'</option>';
+						}
+				
+					//Populate
+					for(var i=0;i<3;i++) {
+						document.getElementById("rot"+i).innerHTML = inner;
+						}
+				
+					//Add Event Listener
+					document.getElementById("4rotQ").addEventListener("change",fourthRotor);
+					</script>
+				</div>
+			<div>
+				Ring Settings:
+				<select id="ring2"></select>
+				<select id="ring1"></select>
+				<select id="ring0"></select>
+				<!--Populate Selects-->
+				<script>
+					//Build Alphabet Options
+					var alphaOpt = "";
+					for(var i=65;i<91;i++) {
+						var char = String.fromCharCode(i);
+						alphaOpt += '<option value="' + char +'">' + char + '</option>';
+						}
+					//Populate
+					for(var i=0;i<3;i++) {
+						document.getElementById("ring"+i).innerHTML = alphaOpt;
+						}
+					</script>
+				</div>
+			<div>
+				Ground Settings:
+				<select id="start2"></select>
+				<select id="start1"></select>
+				<select id="start0"></select>
+				<!--Populate Selects-->
+				<script>
+					//Populate
+					for(var i=0;i<3;i++) {
+						document.getElementById("start"+i).innerHTML = alphaOpt;
+						}
+					</script>
+				</div>
+			</form>
+		<div>
+			<input type="text" id="input"/>
+			<span id="output"></span>
+		</div>
+		<!--Default Settings && Event Listeners && Focus-->
+		<script>
+			var defaultSettings = {"rot0":3,"rot1":2,"rot2":1,
+									"ring0":"A","ring1":"A","ring2":"A",
+									"start0":"A","start1":"A","start2":"A"};
+			//Apply default settings
+			for(entry in defaultSettings) {
+				document.getElementById(entry).value = defaultSettings[entry];
+				}
+			setupRotors();
+			
+			//Event Listeners
+			//get("input").addEventListener("keyup",send);
+			get("enigmaSettings").addEventListener("change",function(){setupRotors();updateDisplay();});
+			get("input").focus();
+			</script>
+		
+		<canvas width="500" height="400" id="enigmaCanv"></canvas>
+		<script>
+			drawCanv();
+			
+			//Canvas Vars
+			var canvasG = get("enigmaCanv");
+			var ctxG = canvasG.getContext("2d");
+			
+			get("input").addEventListener("keydown",function(e){if(e.keyCode<91 && e.keyCode>64){drawKey(canvasG,ctxG,String.fromCharCode(e.keyCode),true);}});
+			get("input").addEventListener("keyup",function(e){if(e.keyCode<91 && e.keyCode>64){drawKey(canvasG,ctxG,String.fromCharCode(e.keyCode),false)}});
+			
+			var litChar='A';
+			get("input").addEventListener("keydown",function(e){
+										if(e.repeat == false && e.keyCode<91 && e.keyCode>64) {
+											var ec = sendOnKeyDown(e);
+											litChar = ec;
+											drawLight(canvasG,ctxG,litChar,true);
+											}
+										});
+		   get("input").addEventListener("keyup",function(e) {
+										get("input").value = "";
+										drawLight(canvasG,ctxG,litChar,false);
+										});
+			</script>
+		</body>
+	</html>
+<!--
+ ROTOR	ENCODING (RING A/1)			NOTCH
+ ----------------------------------------
+ I		EKMFLGDQVZNTOWYHXUSPAIBRCJ	Q
+ II		AJDKSIRUXBLHWTMCQGZNPYFVOE	E
+ III	BDFHJLCPRTXVZNYEIWGAKMUSQO	V
+ IV		ESOVPZJAYQUIRHXLNFTGKDCMWB	J
+ V		VZBRGITYUPSDNHLXAWMJQOFECK	Z
+ VI		JPGVOUMFYQBENHZRDKASXLICTW	Z,M
+ VII	NZJHGRCXMYSWBOUFAIVLPEKQDT	Z,M
+ VIII	FKQHTLXOCBJSPDZRAMEWNIUYGV	Z,M
+ 
+ REFLECTOR	ENCODING
+ ---------------------------------------
+ A			EJMZALYXVBWFCRQUONTSPIKHGD
+ B			YRUHQSLDPXNGOKMIEBFZCWVJAT
+ C			FVPJIAOYEDRZXWGCTKUQSBNMHL
+ BThin		ENKQAUYWJICOPBLMDXZVFTHRGS
+ CThin		RDOBJNTKVEHMLFCWZAXGYIPSUQ
+ Beta		LEYJVCNIXWPBQMDRTAKZGFUHOS
+ Gamma		FSOKANUERHMBTIYCWLQPZXVGJD
+ 
+ The Beta and Gamma "rotors" are actually just an
+ addon for the thin reflectors to allow more
+ variation and so lack notches...
+ 
+ Rotors advance if either the preceding rotor's
+ notch is exposed or if its own notch is exposed.
+ (Double stepping)
+ 
+ Still need to do the Steckerbrecht
+
+ -->
