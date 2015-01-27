@@ -477,7 +477,16 @@
 			//Event Listeners
 			//get("input").addEventListener("keyup",send);
 			get("enigmaSettings").addEventListener("change",function(){setupRotors();updateDisplay();});
-			get("input").focus();
+			
+			//Detect touch and set focus if not
+			function isTouchDevice() {
+				var el = document.createElement('div');
+				el.setAttribute('ongesturestart', 'return;'); // or try "ontouchstart"
+				return typeof el.ongesturestart === "function";
+				}
+			if(!isTouchDevice()) {
+				get("input").focus();
+				}
 			</script>
 		
 		<canvas width="500" height="400" id="enigmaCanv"></canvas>
