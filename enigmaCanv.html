@@ -218,7 +218,7 @@
 		
 			</script>
 		
-		<!--Enigma Canvas Script-->
+		<!--Canvas Drawing Script-->
 		<script>
 			var keyOffsets = {
 				'Q':[0,0],'W':[1,0],'E':[2,0],'R':[3,0],'T':[4,0],'Z':[5,0],'U':[6,0],'I':[7,0],'O':[8,0],
@@ -335,6 +335,55 @@
 				ctx.fillText(light,x+20,y+16);
 				
 				}
+
+			</script>
+		
+		<!--Canvas Click Handling-->
+		<script>
+			function keyHandler(x,y,e) {
+				var keyChars = [['Q','W','E','R','T','Z','U','I','O'],
+							['A','S','D','F','G','H','J','K'],
+							['P','Y','X','C','V','B','N','M','L']];
+				x-=20;
+				y-=220;
+				if(y%50 > 40) {return;}
+				y = Math.floor(y/50);
+				if(y%2) {x-=25;}
+				if(x%50 > 40) {return;}
+				x = Math.floor(x/50);
+				
+				var char = keyChars[y][x];
+				if(e.type == "mousedown") {
+					pressKey(char);
+					}
+				if(e.type == "mouseup") {
+					releaseKey(char);
+					}
+				}
+			
+			function canvasClickHandler(e) {
+				var bCRect = canvasG.getBoundingClientRect();
+				var x = canvasG.width*(e.clientX - bCRect.left)/bCRect.width;
+				var y = canvasG.height*(e.clientY - bCRect.top)/bCRect.height;
+				if(y>220 && y<350) {keyHandler(x,y,e);return;}
+				}
+			</script>
+		
+		<!--Enigma High Level Events-->
+		<script>
+			function pressKey(char) {
+				var kCode = char.charCodeAt(0);
+				drawKey(canvasG,ctxG,char,true);
+				var ec = sendOnKeyDown({'keyCode':kCode});
+				litChars[kCode] = ec;
+				drawLight(canvasG,ctxG,litChars[kCode],true);
+				}
+		
+			function releaseKey(char) {
+				var kCode = char.charCodeAt(0);
+				drawKey(canvasG,ctxG,char,false);
+				drawLight(canvasG,ctxG,litChars[kCode],false);
+				}
 			</script>
 		
 		<style>
@@ -439,21 +488,26 @@
 			var canvasG = get("enigmaCanv");
 			var ctxG = canvasG.getContext("2d");
 			
-			get("input").addEventListener("keydown",function(e){if(e.keyCode<91 && e.keyCode>64){drawKey(canvasG,ctxG,String.fromCharCode(e.keyCode),true);}});
-			get("input").addEventListener("keyup",function(e){if(e.keyCode<91 && e.keyCode>64){drawKey(canvasG,ctxG,String.fromCharCode(e.keyCode),false)}});
-			
-			var litChar='A';
+			var litChars={};
 			get("input").addEventListener("keydown",function(e){
 										if(e.repeat == false && e.keyCode<91 && e.keyCode>64) {
-											var ec = sendOnKeyDown(e);
-											litChar = ec;
-											drawLight(canvasG,ctxG,litChar,true);
+										    pressKey(String.fromCharCode(e.keyCode));
 											}
 										});
 		   get("input").addEventListener("keyup",function(e) {
-										get("input").value = "";
-										drawLight(canvasG,ctxG,litChar,false);
+										if(e.repeat == false && e.keyCode<91 && e.keyCode>64) {
+											get("input").value = "";
+											releaseKey(String.fromCharCode(e.keyCode))
+											}
 										});
+										
+			canvasG.addEventListener("mousedown",canvasClickHandler);
+			canvasG.addEventListener("touchstart",function(e){e.changedTouches[0].type = "mousedown";
+									 canvasClickHandler(e.changedTouches[0])});
+			
+			canvasG.addEventListener("mouseup",canvasClickHandler);
+			canvasG.addEventListener("touchend",function(e){e.changedTouches[0].type = "mouseup";
+									 canvasClickHandler(e.changedTouches[0])});
 			</script>
 		</body>
 	</html>
