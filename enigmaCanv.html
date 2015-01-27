@@ -323,7 +323,9 @@
 				ctx.fillStyle = "#535353";
 				ctx.fillRect(x,y,40,40);
 				
-				ctx.fillStyle = "#000";
+				if(state) {ctx.fillStyle = "#282828";}
+				else {ctx.fillStyle = "#000";}
+				
 				fillEllipse(canvas,ctx,x+20,y+14,20,14);
 				
 				if(state) {ctx.fillStyle = "#ff9";}
@@ -478,15 +480,7 @@
 			//get("input").addEventListener("keyup",send);
 			get("enigmaSettings").addEventListener("change",function(){setupRotors();updateDisplay();});
 			
-			//Detect touch and set focus if not
-			function isTouchDevice() {
-				var el = document.createElement('div');
-				el.setAttribute('ongesturestart', 'return;'); // or try "ontouchstart"
-				return typeof el.ongesturestart === "function";
-				}
-			if(!isTouchDevice()) {
-				get("input").focus();
-				}
+			
 			</script>
 		
 		<canvas width="500" height="400" id="enigmaCanv"></canvas>
@@ -509,14 +503,24 @@
 											releaseKey(String.fromCharCode(e.keyCode))
 											}
 										});
-										
-			canvasG.addEventListener("mousedown",canvasClickHandler);
-			canvasG.addEventListener("touchstart",function(e){e.changedTouches[0].type = "mousedown";
-									 canvasClickHandler(e.changedTouches[0])});
 			
-			canvasG.addEventListener("mouseup",canvasClickHandler);
-			canvasG.addEventListener("touchend",function(e){e.changedTouches[0].type = "mouseup";
-									 canvasClickHandler(e.changedTouches[0])});
+			//Detect touch and set event listeners &| keyboard focus if not
+			function isTouchDevice() {
+				var el = document.createElement('div');
+				el.setAttribute('ongesturestart', 'return;'); // or try "ontouchstart"
+				return typeof el.ongesturestart === "function";
+				}
+			if(isTouchDevice()) {
+				canvasG.addEventListener("touchstart",function(e){e.changedTouches[0].type = "mousedown";
+										 canvasClickHandler(e.changedTouches[0])});
+				canvasG.addEventListener("touchend",function(e){e.changedTouches[0].type = "mouseup";
+										 canvasClickHandler(e.changedTouches[0])});
+				}
+			else {
+				 canvasG.addEventListener("mousedown",canvasClickHandler);
+				 canvasG.addEventListener("mouseup",canvasClickHandler);
+				 get("input").focus();
+				}
 			</script>
 		</body>
 	</html>
