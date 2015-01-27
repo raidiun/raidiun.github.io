@@ -506,9 +506,7 @@
 			
 			//Detect touch and set event listeners &| keyboard focus if not
 			function isTouchDevice() {
-				var el = document.createElement('div');
-				el.setAttribute('ongesturestart', 'return;'); // or try "ontouchstart"
-				return typeof el.ongesturestart === "function";
+				return (('ontouchstart' in window) || (navigator.MaxTouchPoints > 0));
 				}
 			if(isTouchDevice()) {
 				canvasG.addEventListener("touchstart",function(e){e.changedTouches[0].type = "mousedown";
