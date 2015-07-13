@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+		<script>
+		function getElem(id) {return document.getElementById(id);}
+		</script>
+	</head>
+	<body>
+		<h1>Programming Exercises: Week 2</h1>
+		
+		<h2>Exercise 1</h2>
+		Please enter a number: <input id="ex1Input"></input><button id="ex1Enter">Enter</button>
+		<br/>
+		You entered: <span id="ex1Output"></span>
+		<script>
+		function ex1Function() {
+			var entry = Number(getElem("ex1Input").value);
+			getElem("ex1Output").innerHTML = String(entry);
+			}
+		getElem("ex1Enter").addEventListener("click",ex1Function);
+		</script>
+		
+		<h2>Exercise 2</h2>
+		Please enter your first number: <input id="ex2Input1"></input><br/>
+		Please enter a second number: <input id="ex2Input2"></input><br/>
+		<button id="ex2Enter">Enter</button>
+		<br/>
+		You entered: <span id="ex2Output"></span>
+		<script>
+		function ex2Function() {
+			var entry1 = Number(getElem("ex2Input1").value);
+			var entry2 = Number(getElem("ex2Input2").value);
+			getElem("ex2Output").innerHTML = String(entry1) + " and " + String(entry2);
+			}
+		getElem("ex2Enter").addEventListener("click",ex2Function);
+		</script>
+		
+		<h2>Exercise 3</h2>
+		Please enter your first number: <input id="ex3Input1"></input><br/>
+		Please enter a second number: <input id="ex3Input2"></input><br/>
+		<button id="ex3Enter">Enter</button>
+		<br/>
+		You entered: <span id="ex3Output"></span><br/>
+		Sum:  <span id="ex3OutputSum"></span><br/>
+		Difference: <span id="ex3OutputDiff"></span><br/>
+		Product: <span id="ex3OutputProd"></span><br/>
+		Quotient: <span id="ex3OutputQuot"></span><br/>
+		<script>
+		function ex3Function() {
+			var entry1 = Number(getElem("ex3Input1").value);
+			var entry2 = Number(getElem("ex3Input2").value);
+			getElem("ex3Output").innerHTML = String(entry1) + " and " + String(entry2);
+			
+			getElem("ex3OutputSum").innerHTML = String(entry1 + entry2);
+			getElem("ex3OutputDiff").innerHTML = String(entry1 - entry2);
+			getElem("ex3OutputProd").innerHTML = String(entry1 * entry2);
+			getElem("ex3OutputQuot").innerHTML = String(entry1 / entry2);
+			}
+		getElem("ex3Enter").addEventListener("click",ex3Function);
+		</script>
+		
+		<h2>Exercise 4/5</h2>
+		Calculate the value of the series:<br/>
+		<math>
+		<mi>S</mi>
+		<mo>=</mo>
+		<munderover>
+			<mi>&Sum;</mi>
+			<mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow>
+			<mi>M</mi>
+		</munderover>
+		<mi>k</mi>
+		<mfrac>
+			<msup><mi>z</mi><mi>k</mi></msup>
+			<mrow><mi>k</mi><mo>!</mo></mrow>
+		</mfrac>
+		</math><br/>
+		where <math><mi>z</mi><mo>=</mo></math><input id="ex4z"></input><button id="ex4Enter">Enter</button><br/>
+		for <math><mi>M</mi><mo>=</mo><mn>3,4,5,6</mn></math><br/>
+		<br/>
+		<table id="ex4Tab" border="1">
+			<tr><td><math><mi>M</mi></math></td><td><math><mi>S</mi></math></td><td>Error</td></tr>
+		</table>
+		<script>
+		function ex4Function() {
+			getElem("ex4Tab").innerHTML = "<tr><td><math><mi>M</mi></math></td><td><math><mi>S</mi></math></td><td>Error</td></tr>";
+			
+			function addTableRow(M,S,error) {
+				getElem("ex4Tab").innerHTML += "<tr><td><math><mn>"
+												+String(M)
+												+"</mn></math></td><td><math><mn>"
+												+String(S)
+												+"</mn></math></td><td><math><mn>"
+												+String(error)
+												+"</mn></math></td></tr>";
+				}
+				
+			function factorial(n) {
+				if( n == 1 || n == 0) {
+					return 1;
+					}
+				else {
+					return (n * factorial(n-1));
+					}
+				}
+			
+			var z = Number(getElem("ex4z").value);
+				
+			function evaluateSummedExpr(k) {
+				return k*(Math.pow(z,k)/factorial(k));
+				}
+			
+			function evaluateSum(M) {
+				var sum = 0;
+				for(var k = 0; k<=M; k++) {
+					sum += evaluateSummedExpr(k);
+					}
+				return sum;
+				}
+			
+			function evaluateInf() {
+				return ( z * Math.pow(Math.E,z) );
+				}
+			
+			for(var M = 3; M<= 6; M++) {
+				var S = evaluateSum(M);
+				var S_true = evaluateInf();
+				addTableRow(M, S, S-S_true );
+				}
+			}
+		getElem("ex4Enter").addEventListener("click",ex4Function);
+		</script>
+		
+	</body>
+</html>

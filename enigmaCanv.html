@@ -168,37 +168,6 @@
 					}
 				}
 		
-			/*function send(e,ip) {
-				var ob = document.getElementById("output");
-				
-				if(ip == undefined) {
-					var ib = document.getElementById("input");
-					
-					var char = ib.value.toUpperCase();
-					ib.value = "";
-					var len = char.length;
-					if(len > 1) {
-						for(var i=0;i<len;i++) {
-							send({},char[i]);
-							}
-						return;
-						}
-					}
-				else {
-					char = ip;
-					}
-				
-				if(/[\., ]/.test(char)) {char="X";}
-				var ccode = char.charCodeAt(0);
-				if(ccode < 65 || ccode > 90 || char == '') {return;}
-				
-				advance(rotors);
-				updateDisplay();
-				
-				ob.innerHTML += encode(rotors,char);
-				if(ob.innerHTML.replace(/\s/g,'').length%4 == 0) {ob.innerHTML += ' ';}
-				}*/
-		
 			function sendOnKeyDown(e) {
 				var ob = document.getElementById("output");
 				var ccode = e.keyCode;
@@ -237,7 +206,6 @@
 				if(size == undefined) {size = width/2};
 				for(var xidx=0;xidx<width;xidx++) {
 					for(var yidx=0;yidx<height;yidx++) {
-						//console.log(xidx,yidx);
 						pixN = 4*(xidx+yidx*width);
 						px = xidx/width;
 						py = yidx/height; // normalize
@@ -489,7 +457,7 @@
 					pressKey(char);
 					}
 				if(e.type == "mouseup") {
-					releaseKey(char);
+					releaseKey();
 					}
 				}
 			
@@ -503,7 +471,10 @@
 		
 		<!--Enigma High Level Events-->
 		<script>
+			var pk;
+			
 			function pressKey(char) {
+				pk = char;
 				var kCode = char.charCodeAt(0);
 				drawKey(canvasG,ctxG,char,true);
 				var ec = sendOnKeyDown({'keyCode':kCode});
@@ -511,7 +482,8 @@
 				drawLight(canvasG,ctxG,litChars[kCode],true);
 				}
 		
-			function releaseKey(char) {
+			function releaseKey() {
+				var char = pk;
 				var kCode = char.charCodeAt(0);
 				drawKey(canvasG,ctxG,char,false);
 				drawLight(canvasG,ctxG,litChars[kCode],false);

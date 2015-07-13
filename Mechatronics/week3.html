@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+		<script>
+		function getElem(id) {return document.getElementById(id);}
+		</script>
+	</head>
+	<body>
+		<h1>Programming Exercises: Week 3</h1>
+		
+		<h2>Exercise 1</h2>
+		<style> #ex1Canv { width:500; height: 500; }</style>
+		<canvas id="ex1Canv" width="500" height="500"></canvas><br/>
+		NxN grid, N = <input onclick="this.select()" id="ex1N"></input><button id="ex1Ent">Enter</button><br/>
+		
+		<table id="ex1Tab" border="1">
+			<tr><td>N</td><td>$$\frac{A_{analytical}}{A_{numerical}}$$</td><td>Relative Error</td></tr>
+		</table>
+		
+		<script>
+			(function() {
+			var ex1canv = getElem("ex1Canv");
+			var ex1ctx = ex1canv.getContext("2d");
+			ex1ctx.transform(40,0,0,-40,250,250);
+			ex1ctx.strokeStyle = "#000";
+			ex1ctx.lineWidth = 0.1;
+			
+			var a = 10;
+			var r = a/2;
+			
+			ex1ctx.arc(0, 0, r, 0, 2 * Math.PI, false);
+			ex1ctx.stroke();
+			
+			function ex1Function() {
+				(function resetCanv() {
+					ex1canv.width = ex1canv.width;
+					ex1ctx.transform(40,0,0,-40,250,250);
+					ex1ctx.strokeStyle = "#000";
+					ex1ctx.lineWidth = 0.1;
+					ex1ctx.arc(0, 0, r, 0, 2 * Math.PI, false);
+					ex1ctx.stroke();
+					})();
+				
+				var N = Number(getElem("ex1N").value);
+				
+				var elemSize = a/N;
+				
+				function drawGridElem(x,y,fillColour,strokeColour) {
+					ex1ctx.fillStyle = fillColour;
+					ex1ctx.strokeStyle = strokeColour;
+					
+					var llX = (-N/2+x)*elemSize;
+					var llY = (-N/2+y)*elemSize;
+					
+					ex1ctx.fillRect(llX,llY,elemSize,elemSize);
+					}
+				
+				function isInCircle(x,y) {
+					var cx = (-N/2+x+0.5)*elemSize;
+					var cy = (-N/2+y+0.5)*elemSize;
+					if( Math.pow(cx,2) + Math.pow(cy,2) < Math.pow(r,2) ) {
+						return true;
+						}
+					else {
+						return false;
+						}
+					}
+				
+				var nSquares = 0;
+				
+				for(var x = 0; x<N; x++) {
+					for(var y = 0; y<N; y++) {
+						var fill;
+						if(isInCircle(x,y)) {
+							fill = "rgba(0,255,0,0.5)";
+							nSquares++;
+							}
+						else {
+							fill = "rgba(255,0,0,0.5)";
+							}
+						
+						drawGridElem(x,y,fill,"#000");
+						}
+					}
+				
+				var a_numerical = nSquares * elemSize * elemSize;
+				var a_analytical = Math.PI * r * r;
+				
+				(function addTableRow(N,ratio,relativeError) {
+					getElem("ex1Tab").innerHTML += "<tr><td>"
+													+String(N)
+													+"</td><td>"
+													+String(ratio.toFixed(5))
+													+"</td><td>"
+													+String(relativeError.toFixed(5))
+													+"</td></tr>";
+					})(N,a_analytical/a_numerical, (a_analytical - a_numerical) / a_analytical);
+				
+				}
+			getElem("ex1Ent").addEventListener("click",ex1Function);
+			})();
+		</script>
+		
+		<h2>Exercise 2</h2>
+		
+		Desired precision (%): <input onclick="this.select()" id="ex2Pres"></input><button id="ex2Ent">Enter</button><br/>
+		Required grid size: <span id="ex2OP"></span><br/>
+		<script>
+		(function(){
+		function ex2Function() {
+			var pres = Number(getElem("ex2Pres").value)/100;
+			
+			var a = 10;
+			var r = a/2;
+						
+			function isInCircle(x,y,elemSize) {
+				var cx = (-N/2+x+0.5)*elemSize;
+				var cy = (-N/2+y+0.5)*elemSize;
+				if( Math.pow(cx,2) + Math.pow(cy,2) < Math.pow(r,2) ) {
+					return true;
+					}
+				else {
+					return false;
+					}
+				}
+			
+			var a_analytical = Math.PI * r * r;
+			
+			function calcError(N,elemSize) {
+				var nSquares = 0;
+				
+				for(var x = 0; x<N; x++) {
+					for(var y = 0; y<N; y++) {
+						if(isInCircle(x,y,elemSize)) {
+							nSquares++;
+							}
+						}
+					}
+				
+				var a_numerical = nSquares * elemSize * elemSize;
+				return (a_analytical - a_numerical)/a_analytical;
+				}
+			
+			var N = 1;
+			var elemSize = a/N;
+			var eVal = Math.abs(calcError(N,elemSize));
+					
+			while(eVal > pres) {
+				console.log(eVal);
+				N++;
+				elemSize = a/N;
+				eVal = Math.abs(calcError(N,elemSize));
+				}
+				
+			getElem("ex2OP").innerHTML = String(N) + "x" + String(N);
+			}
+		getElem("ex2Ent").addEventListener("click",ex2Function);
+		})();
+		</script>
+		
+		<h2>Exercises 3 &amp; 4</h2>
+		<style> #ex3Canv { width:500; height: 500; }</style>
+		<canvas id="ex3Canv" width="500" height="500"></canvas><br/>
+		NxN grid, N = <input onclick="this.select()" id="ex3N"></input><button id="ex3Ent">Enter</button><br/>
+		
+		<table id="ex3Tab" border="1">
+			<tr><td>N</td><td>$$\frac{I_{analytical}}{I_{numerical}}$$</td><td>Relative Error</td></tr>
+		</table>
+		
+		<script>
+			(function(){
+			var ex3canv = getElem("ex3Canv");
+			var ex3ctx = ex3canv.getContext("2d");
+			ex3ctx.transform(40,0,0,-40,250,250);
+			ex3ctx.strokeStyle = "#000";
+			ex3ctx.lineWidth = 0.1;
+			
+			var a = 10;
+			var r = a/2;
+			
+			ex3ctx.arc(0, 0, r, 0, 2 * Math.PI, false);
+			ex3ctx.stroke();
+			
+			function ex3Function() {
+				(function resetCanv() {
+					ex3canv.width = ex3canv.width;
+					ex3ctx.transform(40,0,0,-40,250,250);
+					ex3ctx.strokeStyle = "#000";
+					ex3ctx.lineWidth = 0.1;
+					ex3ctx.arc(0, 0, r, 0, 2 * Math.PI, false);
+					ex3ctx.stroke();
+					})();
+				
+				var N = Number(getElem("ex3N").value);
+				
+				var elemSize = a/N;
+				
+				function drawGridElem(x,y,fillColour,strokeColour) {
+					ex3ctx.fillStyle = fillColour;
+					ex3ctx.strokeStyle = strokeColour;
+					
+					var llX = (-N/2+x)*elemSize;
+					var llY = (-N/2+y)*elemSize;
+					
+					ex3ctx.fillRect(llX,llY,elemSize,elemSize);
+					}
+				
+				function isInCircle(x,y) {
+					var cx = (-N/2+x+0.5)*elemSize;
+					var cy = (-N/2+y+0.5)*elemSize;
+					if( Math.pow(cx,2) + Math.pow(cy,2) < Math.pow(r,2) ) {
+						return {'bool':true,'y':cy};
+						}
+					else {
+						return {'bool':false,'y':cy};;
+						}
+					}
+				
+				var I_numerical = 0;
+				
+				for(var x = 0; x<N; x++) {
+					for(var y = 0; y<N; y++) {
+						var fill;
+						var iicResult = isInCircle(x,y)
+						if(iicResult.bool) {
+							var gval = Math.round(255*Math.pow(iicResult.y,2)/25);
+							var bval = Math.round((255 - Math.round(255*Math.pow(iicResult.y,2)/25))/2);
+							fill = "rgba(0,"+String(gval)+","+String(bval)+",0.5)";
+							I_numerical += Math.pow(iicResult.y,2) * elemSize * elemSize;
+							}
+						else {
+							fill = "rgba(255,0,0,0.5)";
+							}
+						
+						drawGridElem(x,y,fill,"#000");
+						}
+					}
+				
+				console.log(I_numerical);
+				
+				var I_analytical = Math.PI * Math.pow(r,4) / 4.0;
+				
+				(function addTableRow(N,ratio,relativeError) {
+					getElem("ex3Tab").innerHTML += "<tr><td>"
+													+String(N)
+													+"</td><td>"
+													+String(ratio.toFixed(5))
+													+"</td><td>"
+													+String(relativeError.toFixed(5))
+													+"</td></tr>";
+					})(N,I_analytical/I_numerical, (I_analytical - I_numerical) / I_analytical);
+				
+				}
+			getElem("ex3Ent").addEventListener("click",ex3Function);
+			})();
+		</script>
+		
+		<h2>Exercise 5</h2>
+		<style> #ex5Canv { width:500; height: 500; }</style>
+		<canvas id="ex5Canv" width="500" height="500"></canvas><br/>
+		N = <input onclick="this.select()" id="ex5N"></input><br/>
+		a = <input onclick="this.select()" id="ex5a"></input><br/>
+		r = <input onclick="this.select()" id="ex5r"></input><br/>
+		<button id="ex5Ent">Enter</button><br/>
+		
+		
+		<table id="ex5Tab" border="1">
+			<tr><td>N</td><td>$$\frac{I_{analytical}}{I_{numerical}}$$</td><td>Relative Error</td></tr>
+		</table>
+		
+		<script>
+			(function(){
+			var ex5canv = getElem("ex5Canv");
+			var ex5ctx = ex5canv.getContext("2d");
+			
+			function ex5Function() {
+				
+				var a = Number(getElem("ex5a").value);
+				var r = Number(getElem("ex5r").value);
+			
+				if(r>a/2) {
+					window.alert("Error: r > a/2");
+					return;
+					}
+				
+				(function resetCanv() {
+					ex5canv.width = ex5canv.width;
+					ex5ctx.transform(500/(a*1.25),0,0,-500/(a*1.25),250,250); //Scale canvas to 1.25 a
+					ex5ctx.strokeStyle = "#000";
+					ex5ctx.lineWidth = 0.1;
+					ex5ctx.arc(0, 0, r, 0, 2 * Math.PI, false);
+					ex5ctx.stroke();
+					})();
+				
+				var N = Number(getElem("ex5N").value);
+				
+				var elemSize = a/N;
+				
+				function drawGridElem(x,y,fillColour,strokeColour) {
+					ex5ctx.fillStyle = fillColour;
+					ex5ctx.strokeStyle = strokeColour;
+					
+					var llX = (-N/2+x)*elemSize;
+					var llY = (-N/2+y)*elemSize;
+					
+					ex5ctx.fillRect(llX,llY,elemSize,elemSize);
+					}
+				
+				function isInCircle(x,y) {
+					var cx = (-N/2+x+0.5)*elemSize;
+					var cy = (-N/2+y+0.5)*elemSize;
+					if( Math.pow(cx,2) + Math.pow(cy,2) < Math.pow(r,2) ) {
+						return {'bool':true,'y':cy};
+						}
+					else {
+						return {'bool':false,'y':cy};;
+						}
+					}
+				
+				var I_numerical = 0;
+				
+				for(var x = 0; x<N; x++) {
+					for(var y = 0; y<N; y++) {
+						var fill;
+						var iicResult = isInCircle(x,y)
+						if(iicResult.bool) {
+							var gval = Math.round(255*Math.pow(iicResult.y,2)/25);
+							var bval = Math.round((255 - Math.round(255*Math.pow(iicResult.y,2)/25))/2);
+							fill = "rgba(0,"+String(gval)+","+String(bval)+",0.5)";
+							I_numerical += Math.pow(iicResult.y,2) * elemSize * elemSize;
+							}
+						else {
+							fill = "rgba(255,0,0,0.5)";
+							}
+						
+						drawGridElem(x,y,fill,"#000");
+						}
+					}
+				
+				console.log(I_numerical);
+				
+				var I_analytical = Math.PI * Math.pow(r,4) / 4.0;
+				
+				(function addTableRow(N,ratio,relativeError) {
+					getElem("ex5Tab").innerHTML += "<tr><td>"
+													+String(N)
+													+"</td><td>"
+													+String(ratio.toFixed(5))
+													+"</td><td>"
+													+String(relativeError.toFixed(5))
+													+"</td></tr>";
+					})(N,I_analytical/I_numerical, (I_analytical - I_numerical) / I_analytical);
+				
+				}
+			getElem("ex5Ent").addEventListener("click",ex5Function);
+			})();
+		</script>
+		
+	</body>
+</html>
